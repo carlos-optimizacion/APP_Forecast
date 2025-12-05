@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -10,20 +9,23 @@ import plotly.express as px
 def mostrar():
     st.title("📊 Módulo 3: Clusterización Estratégica")
 
-    if not os.path.exists("data"):
-        st.warning("📂 No hay carpeta /data.")
+    carpeta_data = "Data"
+    if not os.path.exists(carpeta_data):
+        st.warning("📂 No hay carpeta /Data.")
         return
 
-    archivos = [f for f in os.listdir("data") if f.endswith((".xlsx", ".xls"))]
+    archivos = [f for f in os.listdir(carpeta_data) if f.endswith((".xlsx", ".xls"))]
     if not archivos:
-        st.warning("📁 No hay archivos Excel disponibles en /data.")
+        st.warning("📁 No hay archivos Excel disponibles en /Data.")
         return
 
     archivo = st.selectbox("Selecciona un archivo:", archivos)
-    df = pd.read_excel(os.path.join("data", archivo))
+    df = pd.read_excel(os.path.join(carpeta_data, archivo))
 
-    columnas_requeridas = ["Fecha", "Nombre_Producto", "Ventas_Unidades", "Precio_Compra", 
-                           "Precio_Venta", "ID_Cliente", "Tienda"]
+    columnas_requeridas = [
+        "Fecha", "Nombre_Producto", "Ventas_Unidades", 
+        "Precio_Compra", "Precio_Venta", "ID_Cliente", "Tienda"
+    ]
     if not all(col in df.columns for col in columnas_requeridas):
         st.error("❌ Faltan columnas necesarias.")
         st.code(columnas_requeridas)
@@ -32,7 +34,6 @@ def mostrar():
     df["Fecha"] = pd.to_datetime(df["Fecha"])
     df["Margen"] = df["Precio_Venta"] - df["Precio_Compra"]
 
-    # SELECCIÓN DE ENTIDAD PARA CLUSTERIZAR
     tipo_agrupacion = st.radio("Selecciona qué deseas agrupar:", 
                                ["Producto", "Cliente", "Tienda"], horizontal=True)
 
@@ -65,7 +66,6 @@ def mostrar():
 
     st.markdown(f"📌 Agrupando por **{grupo}** con variables seleccionadas:")
 
-    # Selección de variables a usar
     seleccion_vars = st.multiselect(
         "Selecciona variables para análisis de clúster:",
         list(variables_posibles.keys()),
@@ -76,10 +76,13 @@ def mostrar():
         st.warning("⚠️ Selecciona al menos una variable.")
         return
 
-    # Crear diccionario con las seleccionadas
     agregaciones = {var: variables_posibles[var] for var in seleccion_vars}
-
     agrupado = df.groupby(grupo).agg(**agregaciones).fillna(0)
+
+    if agrupado[seleccion_vars].std().sum() == 0:
+        st.warning("⚠️ Las variables seleccionadas no presentan variación. No es posible agrupar.")
+        return
+
     st.dataframe(agrupado)
 
     # Normalización
