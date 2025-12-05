@@ -53,16 +53,16 @@ def forecast_modelos(y):
 def mostrar():
     st.title("📈 Módulo 2: Forecast Inteligente de Ventas")
 
-    if not os.path.exists("data"):
-        os.makedirs("data")
+    carpeta_data = "Data"
+    os.makedirs(carpeta_data, exist_ok=True)
 
-    archivos = [f for f in os.listdir("data") if f.endswith((".xlsx", ".xls"))]
+    archivos = [f for f in os.listdir(carpeta_data) if f.endswith((".xlsx", ".xls"))]
     if not archivos:
-        st.warning("📂 No hay archivos Excel en la carpeta /data.")
+        st.warning("📂 No hay archivos Excel en la carpeta /Data.")
         return
 
     archivo = st.selectbox("Selecciona un archivo de datos:", archivos)
-    df = pd.read_excel(os.path.join("data", archivo))
+    df = pd.read_excel(os.path.join(carpeta_data, archivo))
 
     columnas = ["Fecha", "Categoria", "Nombre_Producto", "Ventas_Unidades"]
     if not all(c in df.columns for c in columnas):
